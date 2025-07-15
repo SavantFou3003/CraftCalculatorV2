@@ -1,33 +1,85 @@
-function calculateCraft() {
-  const item = document.getElementById('itemSelect').value;
-  const quantity = parseInt(document.getElementById('quantity').value);
-  let output = '';
+let pendingCrafts = [];  // en attente
+let validatedCrafts = []; // validés
 
-  if (item === 'warhead_t1') {
-    output += `Warhead T1 x${quantity} :\n`;
-    output += `  - Acier compressé : ${16 * quantity} (nécessite ${16 * quantity * 8} charbon et ${16 * quantity * 2} lingots de fer)\n`;
-    output += `  - Tin plate : ${16 * quantity} (nécessite ${16 * quantity * 4} lingots de tin)\n`;
-    output += `  - TNT : ${16 * quantity} (nécessite ${16 * quantity * 4} sable et ${16 * quantity * 5} poudre à canon)\n`;
-    output += `  - Poudre à canon : ${16 * quantity}\n`;
-  } else if (item === 'warhead_t2') {
-    output += `Warhead T2 x${quantity} :\n`;
-    output += `  - Acier compressé : ${16 * quantity} (nécessite ${16 * quantity * 8} charbon et ${16 * quantity * 2} lingots de fer)\n`;
-    output += `  - Compressed copper : ${16 * quantity} (nécessite ${16 * quantity * 2} lingots de cuivre)\n`;
-    output += `  - Copper plate : ${16 * quantity} (nécessite ${16 * quantity * 4} lingots de cuivre)\n`;
-    output += `  - Poudre à canon : ${12 * quantity}\n`;
-    output += `  - Warhead T1 : ${5 * quantity}\n`;
-  } else if (item === 'warhead_t3') {
-    output += `Warhead T3 x${quantity} :\n`;
-    output += `  - (détails à compléter)\n`;
-  } else if (item === 'conventional_missile') {
-    output += `Conventional Missile x${quantity} :\n`;
-    output += `  - Plan T1 : ${2 * quantity}\n`;
-    output += `  - Warhead T1 : ${2 * quantity}\n`;
-    output += `  - Cactus green : ${60 * quantity} (nécessite ${(60 * quantity) / 8} green shrub, ${(60 * quantity) / 8} fioles d'eau et ${(60 * quantity) / 8} redstone)\n`;
-    output += `  - Dandelion yellow : ${10 * quantity} (pareil que cactus green mais avec fleur jaune)\n`;
-    output += `  - Basic circuit : ${1 * quantity} (4 redstone, 4 comparateurs et 1 steel plate)\n`;
-    output += `  - TNT : ${10 * quantity} (nécessite ${10 * quantity * 4} sable et ${10 * quantity * 5} poudre à canon)\n`;
-  }
+let adminPassword = "secret123";  // change le mot de passe ici (non affiché)
 
-  document.getElementById('results').textContent = output;
+function addComponent() {
+    const container = document.createElement("div");
+    container.innerHTML = `
+        <input type="text" placeholder="Nom du composant" class="componentName">
+        <input type="number" placeholder="Quantité" class="componentQty">
+    `;
+    document.getElementById("components").appendChild(container);
+}
+
+function proposeCraft() {
+    const name = document.getElementById("newItemName").value;
+    const qty = parseInt(document.getElementById("newItemQty").value);
+    const componentsEls = document.querySelectorAll("#components div");
+    const components = [];
+    componentsEls.forEach(div => {
+        const compName = div.querySelector(".componentName").value;
+        const compQty = parseInt(div.querySelector(".componentQty").value);
+        if(compName && compQty) components.push({name: compName, qty: compQty});
+    });
+    if(name && qty && components.length > 0){
+        pendingCrafts.push({name, qty, components});
+        alert("Craft proposé !");
+    } else {
+        alert("Veuillez remplir tous les champs");
+    }
+}
+
+function validateCrafts() {
+    const pass = prompt("Mot de passe admin:");
+    if(pass === adminPassword){
+        validatedCrafts = validatedCrafts.concat(pendingCrafts);
+        pendingCrafts = [];
+        alert("Crafts validés !");
+    } else {
+        alert("Mot de passe incorrect");
+    }
+}
+
+// Fonction récursive pour calculer tous les composants bruts
+function getTotalResources(itemName, qty) {
+    let craft = validatedCrafts.find(c => c.name === itemName);
+    if(!craft){
+        return {[itemName]: qty};
+    }
+    let total = {};
+    craft.components.forEach(comp => {
+        const subTotal = getTotalResources(comp.name, comp.qty * qty / craft.qty);
+        for(const key in subTotal){
+            total[key] = (total[key] || 0) + subTotal[key];
+        }
+    });
+    return total;
+}
+
+function calculateAndShow(){
+    const name = prompt("Nom de l'item à fabriquer:");
+    const qty = parseInt(prompt("Quantité à fabriquer:"));
+    if(!name || !qty) return;
+
+    const total = getTotalResources(name, qty);
+    let html = `<h2>Ressources nécessaires pour fabriquer ${qty} ${name}</h2>`;
+    html += "<table border='1'><tr><th>Item</th><th>Quantité</th></tr>";
+    for(const key in total){
+        html += `<tr><td>${key}</td><td>${Math.ceil(total[key])}</td></tr>`;
+    }
+    html += "</table>";
+    document.getElementById("result").innerHTML = html;
+}
+
+function downloadTable(){
+    let csv = "Item,Quantité\\n";
+    validatedCrafts.forEach(craft => {
+        csv += `${craft.name},${craft.qty}\\n`;
+    });
+    const blob = new Blob([csv], {type: "text/csv"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "validated_crafts.csv";
+    a.click();
 }
