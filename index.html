@@ -3,13 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Craft Calculator Avancé</title>
+  <title>Craft Manager NationsGlory</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Craft Calculator</h1>
+  <h1>Craft Manager NationsGlory</h1>
   <button onclick="openCraftModal()">Proposer un craft</button>
-  <h2>Liste des crafts proposés</h2>
+
+  <h2>Crafts validés</h2>
+  <ul id="validatedCraftsList"></ul>
+
+  <h2>Crafts en attente</h2>
   <ul id="pendingCraftsList"></ul>
 
   <!-- Modal -->
@@ -17,16 +21,13 @@
     <div class="modal-content">
       <span class="close" onclick="closeCraftModal()">&times;</span>
       <h2>Proposer un craft</h2>
-      
       <div>
         <input type="text" id="newItemName" placeholder="Nom de l'item">
         <input type="number" id="newItemQty" placeholder="Qté">
+        <button onclick="addComponent(this)">+ Composant</button>
       </div>
-
       <div id="components"></div>
-      <button onclick="addComponent()">+ Ajouter un composant</button>
-
-      <br><br>
+      <br>
       <button onclick="proposeCraft()">Proposer le craft</button>
     </div>
   </div>
