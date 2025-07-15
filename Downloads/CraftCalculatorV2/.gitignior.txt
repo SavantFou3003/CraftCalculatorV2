@@ -1,0 +1,12 @@
+# Ignorer fichiers Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.lnk
+
+# Ignorer fichiers système cachés
+.DS_Store
+.AppData/
+.local/
+.tmp/
+.cache/
