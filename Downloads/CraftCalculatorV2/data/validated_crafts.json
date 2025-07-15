@@ -1,0 +1,16 @@
+[
+  {
+    "name": "Conventional Missile",
+    "qty": 3,
+    "components": [
+      {
+        "name": "Warhead T1",
+        "qty": 1
+      },
+      {
+        "name": "Guidance System",
+        "qty": 1
+      }
+    ]
+  }
+]
