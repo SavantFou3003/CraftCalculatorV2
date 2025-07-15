@@ -1,4 +1,33 @@
-let pendingCrafts = [];
+async function loadCrafts() {
+  const pending = await fetch('/pending-crafts').then(res => res.json());
+  const validated = await fetch('/validated-crafts').then(res => res.json());
+
+  const pendingList = document.getElementById("pendingCraftsList");
+  const validatedList = document.getElementById("validatedCraftsList");
+  pendingList.innerHTML = "";
+  validatedList.innerHTML = "";
+
+  pending.forEach(craft => pendingList.appendChild(createCraftElement(craft, true)));
+  validated.forEach(craft => validatedList.appendChild(createCraftElement(craft, false)));
+}
+
+function createCraftElement(craft, canValidate) {
+  const li = document.createElement("li");
+  let text = `${craft.qty} x ${craft.name}`;
+  text += craft.components.map(c => {
+    let sub = c.subcomponents.length ? ` [${c.subcomponents.map(s => `${s.qty} x ${s.name}`).join(", ")}]` : "";
+    return ` | ${c.qty} x ${c.name}${sub}`;
+  }).join("");
+  li.textContent = text;
+
+  if (canValidate) {
+    const btn = document.createElement("button");
+    btn.textContent = "Valider";
+    btn.onclick = () => validateCraft(craft);
+    li.appendChild(btn);
+  }
+  return li;
+}
 
 function openCraftModal() {
   document.getElementById("craftModal").style.display = "block";
@@ -11,29 +40,28 @@ function closeCraftModal() {
   document.getElementById("components").innerHTML = "";
 }
 
-function addComponent() {
+function addComponent(button) {
   const container = document.createElement("div");
   container.className = "component";
   container.innerHTML = `
     <input type="text" placeholder="Composant">
     <input type="number" placeholder="Qté">
     <button onclick="addSubComponent(this)">+ Sous-composant</button>
-    <div class="subcomponents"></div>
   `;
-  document.getElementById("components").appendChild(container);
+  button.parentNode.parentNode.querySelector("#components").appendChild(container);
 }
 
 function addSubComponent(button) {
-  const subContainer = document.createElement("div");
-  subContainer.className = "subcomponent";
-  subContainer.innerHTML = `
+  const sub = document.createElement("div");
+  sub.className = "subcomponent";
+  sub.innerHTML = `
     <input type="text" placeholder="Sous-composant">
     <input type="number" placeholder="Qté">
   `;
-  button.nextElementSibling.appendChild(subContainer);
+  button.parentNode.appendChild(sub);
 }
 
-function proposeCraft() {
+async function proposeCraft() {
   const name = document.getElementById("newItemName").value.trim();
   const qty = parseInt(document.getElementById("newItemQty").value);
   const components = [];
@@ -45,39 +73,31 @@ function proposeCraft() {
     comp.querySelectorAll(".subcomponent").forEach(sub => {
       const subName = sub.querySelector("input[type='text']").value.trim();
       const subQty = parseInt(sub.querySelector("input[type='number']").value);
-      if(subName && subQty) {
-        subcomponents.push({ name: subName, qty: subQty });
-      }
+      if(subName && subQty) subcomponents.push({name: subName, qty: subQty});
     });
-    if(compName && compQty) {
-      components.push({ name: compName, qty: compQty, subcomponents });
-    }
+    if(compName && compQty) components.push({name: compName, qty: compQty, subcomponents});
   });
 
   if(name && qty && components.length > 0) {
-    pendingCrafts.push({ name, qty, components });
-    updatePendingCraftsList();
+    await fetch('/add-pending', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ name, qty, components })
+    });
     closeCraftModal();
-    alert("Craft proposé !");
+    loadCrafts();
   } else {
-    alert("Veuillez remplir tous les champs !");
+    alert("Remplis tout !");
   }
 }
 
-function updatePendingCraftsList() {
-  const list = document.getElementById("pendingCraftsList");
-  list.innerHTML = "";
-  pendingCrafts.forEach(craft => {
-    const li = document.createElement("li");
-    let text = `${craft.qty} x ${craft.name} : `;
-    text += craft.components.map(c => {
-      let sub = "";
-      if(c.subcomponents.length > 0) {
-        sub = ` [${c.subcomponents.map(s => `${s.qty} x ${s.name}`).join(", ")}]`;
-      }
-      return `${c.qty} x ${c.name}${sub}`;
-    }).join(", ");
-    li.textContent = text;
-    list.appendChild(li);
+async function validateCraft(craft) {
+  const pwd = prompt("Mot de passe admin ?");
+  if (!pwd) return;
+  await fetch('/validate-craft', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({ craft, password: pwd })
   });
+  loadCrafts();
 }
+
+loadCrafts();
