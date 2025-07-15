@@ -1,32 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Craft Calculator</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CraftCalculator</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Craft Calculator</h1>
-    <div class="input-group">
-      <label for="itemSelect">Sélectionnez un item :</label>
-      <select id="itemSelect">
-        <option value="warhead_t1">Warhead T1</option>
-        <option value="warhead_t2">Warhead T2</option>
-        <option value="warhead_t3">Warhead T3</option>
-        <option value="conventional_missile">Conventional Missile</option>
-      </select>
-    </div>
-    <div class="input-group">
-      <label for="quantity">Quantité :</label>
-      <input type="number" id="quantity" value="1" min="1" />
-    </div>
-    <button onclick="calculateCraft()">Calculer</button>
+<h1>CraftCalculator</h1>
 
-    <div id="results" class="results"></div>
-  </div>
+<div id="newCraftForm">
+  <input type="text" id="newItemName" placeholder="Nom de l'item">
+  <input type="number" id="newItemQty" placeholder="Quantité">
+  <div id="components"></div>
+  <button onclick="addComponent()">Ajouter un composant</button>
+  <button onclick="proposeCraft()">Proposer ce craft</button>
+</div>
 
-  <script src="script.js"></script>
+<button onclick="validateCrafts()">Valider les crafts (admin)</button>
+<button onclick="calculateAndShow()">Voir ressources nécessaires</button>
+<button onclick="downloadTable()">Télécharger en CSV</button>
+
+<div id="result"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
