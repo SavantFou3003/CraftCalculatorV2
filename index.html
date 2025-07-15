@@ -1,28 +1,32 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CraftCalculator</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Craft Calculator</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>CraftCalculator</h1>
+  <h1>Craft Calculator</h1>
 
-<div id="newCraftForm">
-  <input type="text" id="newItemName" placeholder="Nom de l'item">
-  <input type="number" id="newItemQty" placeholder="Quantité">
-  <div id="components"></div>
-  <button onclick="addComponent()">Ajouter un composant</button>
-  <button onclick="proposeCraft()">Proposer ce craft</button>
-</div>
+  <button onclick="openCraftModal()">Proposer un craft</button>
 
-<button onclick="validateCrafts()">Valider les crafts (admin)</button>
-<button onclick="calculateAndShow()">Voir ressources nécessaires</button>
-<button onclick="downloadTable()">Télécharger en CSV</button>
+  <h2>Liste des crafts proposés (en attente)</h2>
+  <ul id="pendingCraftsList"></ul>
 
-<div id="result"></div>
+  <!-- Modal -->
+  <div id="craftModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeCraftModal()">&times;</span>
+      <h2>Proposer un craft</h2>
+      <input type="text" id="newItemName" placeholder="Nom de l'item">
+      <input type="number" id="newItemQty" placeholder="Quantité produite">
+      <div id="components"></div>
+      <button onclick="addComponent()">Ajouter un composant</button>
+      <button onclick="proposeCraft()">Envoyer</button>
+    </div>
+  </div>
 
-<script src="script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
