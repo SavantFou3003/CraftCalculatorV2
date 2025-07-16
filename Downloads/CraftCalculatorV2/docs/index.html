@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Craft Calculator</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Craft Calculator</h1>
+
+  <button onclick="openForm()">Proposer un craft</button>
+
+  <div id="crafts"></div>
+
+  <div id="formModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeForm()">&times;</span>
+      <h2>Proposer un craft</h2>
+      <input type="text" id="itemName" placeholder="Nom de l'item">
+      <input type="number" id="itemQty" placeholder="Qté">
+
+      <div id="components"></div>
+
+      <button onclick="addComponent()">+ Ajouter un composant</button>
+      <br/>
+      <button onclick="submitCraft()">Envoyer le craft</button>
+    </div>
+  </div>
+
+<script>
+let components = [];
+
+function openForm() {
+  document.getElementById('formModal').style.display = 'block';
+  components = [];
+  renderComponents();
+}
+
+function closeForm() {
+  document.getElementById('formModal').style.display = 'none';
+}
+
+function addComponent() {
+  components.push({name:'', qty:1});
+  renderComponents();
+}
+
+function updateComponent(i, field, value) {
+  components[i][field] = value;
+}
+
+function renderComponents() {
+  const container = document.getElementById('components');
+  container.innerHTML = '';
+  components.forEach((comp, i) => {
+    container.innerHTML += \`
+      <div>
+        <input type="text" placeholder="Nom composant" value="\${comp.name}" 
+          oninput="updateComponent(\${i}, 'name', this.value)">
+        <input type="number" placeholder="Qté" value="\${comp.qty}" 
+          oninput="updateComponent(\${i}, 'qty', this.value)">
+      </div>
+    \`;
+  });
+}
+
+async function submitCraft() {
+  const name = document.getElementById('itemName').value;
+  const qty = parseInt(document.getElementById('itemQty').value);
+  fetch('/api/propose', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({name, qty, components})
+  }).then(res=>res.json()).then(data=>{
+    alert(data.message);
+    closeForm();
+  });
+}
+
+async function loadCrafts(){
+  const res = await fetch('/api/crafts');
+  const crafts = await res.json();
+  const div = document.getElementById('crafts');
+  div.innerHTML = crafts.map(c=>\`
+    <div><strong>\${c.name} (x\${c.qty})</strong><br/>
+      \${c.components.map(comp=>"- "+comp.qty+" × "+comp.name).join('<br/>')}
+    </div>\`).join('<hr/>');
+}
+loadCrafts();
+</script>
+</body>
+</html>
